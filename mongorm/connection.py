@@ -37,5 +37,9 @@ def getDatabase( ):
 		connection = getConnection( )
 		databaseName = connectionSettings['database']
 		database = connection[databaseName]
+		
+		if 'username' in connectionSettings and \
+			'password' in connectionSettings:
+			database.authenticate( connectionSettings['username'], connectionSettings['password'] )
 	
 	return database

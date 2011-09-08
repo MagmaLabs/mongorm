@@ -75,5 +75,5 @@ class BaseDocument(object):
 				dbField = field.dbField
 				pythonValue = getattr(self, name)
 				self._data[dbField] = field.fromPython( pythonValue )
-				print 'resyncing', dbField, 'to', self._data[dbField]
+				#print 'resyncing', dbField, 'to', self._data[dbField]
 		
