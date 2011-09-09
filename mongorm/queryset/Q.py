@@ -37,7 +37,6 @@ class Q(object):
 
 			field = document._fields[fieldName]
 			if not forUpdate:
-				print fieldName, dereferences, value
 				searchValue = field.toQuery( value, dereferences=dereferences )
 			else:
 				searchValue = field.fromPython( value )
