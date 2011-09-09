@@ -21,6 +21,7 @@ class Q(object):
 			fieldName = name
 
 			comparison = None
+			dereferences = []
 			if '__' in fieldName:
 				chunks = fieldName.split( '__' )
 				fieldName = chunks[0]
@@ -28,15 +29,16 @@ class Q(object):
 				comparison = chunks[-1]
 
 				if comparison in ['gt', 'lt', 'lte', 'gte']:
-					dereferences = chunks[:-1]
+					dereferences = chunks[1:-1]
 				else:
 					# not a comparison operator
-					dereferences = chunks
+					dereferences = chunks[1:]
 					comparison = None
 
 			field = document._fields[fieldName]
 			if not forUpdate:
-				searchValue = field.toQuery( value )
+				print fieldName, dereferences, value
+				searchValue = field.toQuery( value, dereferences=dereferences )
 			else:
 				searchValue = field.fromPython( value )
 

@@ -15,7 +15,7 @@ class BaseField(object):
 	def toPython( self, bsonValue ):
 		raise NotImplementedError
 	
-	def toQuery( self, pythonValue ):
+	def toQuery( self, pythonValue, dereferences=[] ):
 		return self.fromPython( pythonValue )
 	
 	def getDefault( self ):

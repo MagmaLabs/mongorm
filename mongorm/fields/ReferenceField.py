@@ -43,7 +43,7 @@ class ReferenceField(BaseField):
 		
 		return data
 	
-	def toQuery( self, pythonValue ):
+	def toQuery( self, pythonValue, dereferences=[] ):
 		return {
 			'_ref': self.fromPython( pythonValue )['_ref']
 		}

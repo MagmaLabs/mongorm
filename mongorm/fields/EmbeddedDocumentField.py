@@ -28,3 +28,10 @@ class EmbeddedDocumentField(BaseField):
 			return self.documentType( )._fromMongo( bsonValue )
 		else:
 			return None
+	
+	def toQuery( self, pythonValue, dereferences=[] ):
+		# FIXME: this doesn't consider converting the value to/from python
+		# should check the types of the fields the whole way down the chain
+		return {
+			'.'.join( dereferences ): pythonValue
+		}
