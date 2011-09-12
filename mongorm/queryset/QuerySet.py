@@ -81,17 +81,33 @@ class QuerySet(object):
 	
 	def __getitem__( self, index ):
 		if isinstance(index, int):
+			getOne = True
 			skip = index
 			limit = 1
+		elif isinstance(index, slice):
+			getOne = False
+			skip = index.start or 0
+			limit = index.stop - skip
+			assert index.step is None, "Slicing with step not supported by mongorm"
 		else:
 			assert False, "item not an index"
 		
-		try:
-			item = self.collection.find( self.query.toMongo( self.document ), skip=skip, limit=limit )[0]
+		print self.query.toMongo( self.document )
+		items = self.collection.find( self.query.toMongo( self.document ), skip=skip, limit=limit )
+		
+		if getOne:
+			try:
+				item = items[0]
+			except IndexError:
+				raise IndexError # re-raise our own index error
 			document = self.document( )._fromMongo( item )
 			return document
-		except IndexError:
-			raise IndexError
+		else:
+			def _yieldItems():
+				for item in items:
+					document = self.document( )._fromMongo( item )
+					yield document
+			return _yieldItems( )
 	
 	def first( self ):
 		try:

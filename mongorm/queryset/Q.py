@@ -19,6 +19,13 @@ class Q(object):
 				continue
 			
 			fieldName = name
+			
+			MONGO_COMPARISONS = ['gt', 'lt', 'lte', 'gte']
+			REGEX_COMPARISONS = {
+				'contains': ( '.*%s.*', '' ),
+				'icontains': ( '.*%s.*', 'i' ),
+			}
+			ALL_COMPARISONS = MONGO_COMPARISONS + REGEX_COMPARISONS.keys()
 
 			comparison = None
 			dereferences = []
@@ -28,7 +35,7 @@ class Q(object):
 
 				comparison = chunks[-1]
 
-				if comparison in ['gt', 'lt', 'lte', 'gte']:
+				if comparison in ALL_COMPARISONS:
 					dereferences = chunks[1:-1]
 				else:
 					# not a comparison operator
@@ -42,7 +49,12 @@ class Q(object):
 				searchValue = field.fromPython( value )
 
 			if comparison is not None:
-				newSearch[field.dbField] = { '$'+comparison: searchValue }
+				if comparison in REGEX_COMPARISONS:
+					regex,options = REGEX_COMPARISONS[comparison]
+					pattern = regex % searchValue
+					newSearch[field.dbField] = { '$regex': pattern, '$options': options }
+				else:
+					newSearch[field.dbField] = { '$'+comparison: searchValue }
 			else:
 				if isinstance(searchValue, dict):
 					if not forUpdate:
