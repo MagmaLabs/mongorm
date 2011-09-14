@@ -5,6 +5,9 @@ class QuerySet(object):
 		self.document = document
 		self.collection = collection
 		self.orderBy = []
+		self._savedCount = None
+		self._savedItems = None
+		self._savedBuiltItems = None
 		if query is None:
 			self.query = Q( )
 		else:
@@ -44,7 +47,13 @@ class QuerySet(object):
 		return QuerySet( self.document, self.collection, query=newQuery )
 	
 	def count( self ):
-		return self.collection.find( self.query.toMongo( self.document ) ).count( )
+		if self._savedCount is None:
+			if self._savedItems is None:
+				self._savedCount = self.collection.find( self.query.toMongo( self.document ) ).count( )
+			else:
+				self._savedCount = self._savedItems.count( )
+		
+		return self._savedCount
 	
 	def delete( self ):
 		self.collection.remove( self.query.toMongo( self.document ) )
@@ -82,9 +91,14 @@ class QuerySet(object):
 	
 	def __iter__( self ):
 		#print 'iter:', self.query.toMongo( self.document ), self.collection
-		items = self.collection.find( self.query.toMongo( self.document ) )
-		for item in items:
-			yield self.document( )._fromMongo( item )
+		if self._savedItems is None:
+			self._savedItems = self.collection.find( self.query.toMongo( self.document ) )
+			self._savedBuiltItems = []
+		for i,item in enumerate(self._savedItems):
+			if i >= len(self._savedBuiltItems):
+				self._savedBuiltItems.append( self.document( )._fromMongo( item ) )
+			
+			yield self._savedBuiltItems[i]
 	
 	def __getitem__( self, index ):
 		if isinstance(index, int):
