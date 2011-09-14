@@ -16,13 +16,20 @@ class QuerySet(object):
 		newQuery = self.query & query
 		#self._mergeSearch( search )
 		#print 'get:', newQuery.toMongo( self.document )
-		result = self.collection.find( newQuery.toMongo( self.document ), limit=1 )
-		if result.count() == 0:
-			raise self.document.DoesNotExist( )
-		elif result.count() > 1:
-			raise self.document.MultipleObjectsReturned( )
-		else:
+		
+		# limit of 2 so we know if multiple matched without running a count()
+		result = self.collection.find( newQuery.toMongo( self.document ), limit=2 )
+		
+		try:
 			result = result[0]
+		except (KeyError, IndexError):
+			raise self.document.DoesNotExist( )
+	
+		try:
+			shouldntExist = result[1]
+			raise self.document.MultipleObjectsReturned( )
+		except (KeyError, IndexError):
+			pass # we actually EXPECT this should happen, ignore
 		
 		return self.document( )._fromMongo( result )
 	
