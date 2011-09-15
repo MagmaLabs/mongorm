@@ -22,8 +22,9 @@ class Q(object):
 			
 			MONGO_COMPARISONS = ['gt', 'lt', 'lte', 'gte']
 			REGEX_COMPARISONS = {
-				'contains': ( '.*%s.*', '' ),
-				'icontains': ( '.*%s.*', 'i' ),
+				'contains': ( '%s', '' ),
+				'icontains': ( '%s', 'i' ),
+				'iexact': ( '^%s$', 'i' ),
 			}
 			ALL_COMPARISONS = MONGO_COMPARISONS + REGEX_COMPARISONS.keys()
 
