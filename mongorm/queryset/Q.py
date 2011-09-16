@@ -24,7 +24,14 @@ class Q(object):
 			REGEX_COMPARISONS = {
 				'contains': ( '%s', '' ),
 				'icontains': ( '%s', 'i' ),
+
 				'iexact': ( '^%s$', 'i' ),
+
+				'startswith': ( '^%s', '' ),
+				'istartswith': ( '^%s', 'i' ),
+				
+				'endswith': ( '%s$', '' ),
+				'iendswith': ( '%s$', 'i' ),
 			}
 			ALL_COMPARISONS = MONGO_COMPARISONS + REGEX_COMPARISONS.keys()
 
