@@ -85,15 +85,21 @@ class Q(object):
 		return newSearch
 	
 	def __or__( self, other ):
-		if len(self.query) == 0: return other
-		if len(other.query) == 0: return self
-				
-		newQuery = { '$or': [ self, other ] }
-		return Q( _query=newQuery )
+		return self.do_merge( other, '$or' )
 	
 	def __and__( self, other ):
+		return self.do_merge( other, '$and' )
+	
+	def do_merge( self, other, op ):
 		if len(self.query) == 0: return other
 		if len(other.query) == 0: return self
 		
-		newQuery = { '$and': [ self, other ] }
+		if op in self.query:
+			items = self.query[op] + [other]
+		elif op in other.query:
+			items = other.query[op] + [self]
+		else:
+			items = [ self, other ]
+		
+		newQuery = { op: items }
 		return Q( _query=newQuery )

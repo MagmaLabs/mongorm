@@ -60,3 +60,22 @@ def test_embedded_regex_comparisons( ):
 	# regex comparisons
 	assert Q( data__attributes__course__name__icontains='c' ).toMongo( TestPage ) \
 		== {'data.attributes.course.name': {'$options': 'i', '$regex': u'c'}}
+
+def test_multiple_or( ):
+	class Test(Document):
+		data = DictField( )
+	
+	query = '123'
+	queryFilter = (
+		Q(data__a__icontains=query) |
+		Q(data__b__icontains=query) |
+		Q(data__c__icontains=query)
+	)
+	
+	assert queryFilter.toMongo( Test ) == {
+		'$or': [
+			{'data.a': {'$options': 'i', '$regex': '123'}},
+			{'data.b': {'$options': 'i', '$regex': '123'}},
+			{'data.c': {'$options': 'i', '$regex': '123'}}
+		]
+	}
