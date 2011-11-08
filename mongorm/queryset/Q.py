@@ -56,24 +56,31 @@ class Q(object):
 			else:
 				searchValue = field.fromPython( value )
 			
-			targetSearchKey = '.'.join( [field.dbField] + dereferences )
+			targetSearchKey = field.dbField
+			
+			valueMapper = lambda value: value
+			
 			
 			if comparison is not None:
 				if comparison in REGEX_COMPARISONS:
 					regex,options = REGEX_COMPARISONS[comparison]
-					pattern = regex % searchValue
-					newSearch[targetSearchKey] = { '$regex': pattern, '$options': options }
+					valueMapper = lambda value: { '$regex': value, '$options': options }
+					#pattern = regex % searchValue
+					#print comparison, searchValue, targetSearchKey, pattern, options
+					#newSearch[targetSearchKey] = { '$regex': pattern, '$options': options }
 				else:
-					newSearch[targetSearchKey] = { '$'+comparison: searchValue }
+					valueMapper = lambda value: { '$'+comparison: value }
+					#newSearch[targetSearchKey] = { '$'+comparison: searchValue }
+
+			if isinstance(searchValue, dict):
+				if not forUpdate:
+					for name,value in searchValue.iteritems( ):
+						key = targetSearchKey + '.' + name
+						newSearch[key] = valueMapper(value)
+				else:
+					newSearch[targetSearchKey] = valueMapper(searchValue)
 			else:
-				if isinstance(searchValue, dict):
-					if not forUpdate:
-						for name,value in searchValue.iteritems( ):
-							newSearch[targetSearchKey + '.' + name] = value
-					else:
-						newSearch[targetSearchKey] = searchValue
-				else:
-					newSearch[targetSearchKey] = searchValue
+				newSearch[targetSearchKey] = valueMapper(searchValue)
 
 		return newSearch
 	

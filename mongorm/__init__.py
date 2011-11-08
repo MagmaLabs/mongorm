@@ -1,6 +1,7 @@
 from mongorm.connection import connect
 
 from mongorm.Document import Document
+from mongorm.DocumentRegistry import DocumentRegistry
 from mongorm.EmbeddedDocument import EmbeddedDocument
 
 from mongorm.fields.DictField import DictField

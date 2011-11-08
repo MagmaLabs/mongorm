@@ -18,3 +18,8 @@ class DictField(BaseField):
 		if bsonValue is None:
 			bsonValue = {}
 		return bsonValue
+	
+	def toQuery( self, pythonValue, dereferences=[] ):
+		return {
+			'.'.join( dereferences ): pythonValue
+		}

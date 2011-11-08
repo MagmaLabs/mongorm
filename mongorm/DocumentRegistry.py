@@ -13,3 +13,7 @@ class DocumentRegistry(object):
 	@classmethod
 	def hasDocument( cls, name ):
 		return name in cls.documentTypes
+	
+	@classmethod
+	def clear( cls ):
+		cls.documentTypes = {}
