@@ -49,29 +49,31 @@ class Q(object):
 					# not a comparison operator
 					dereferences = chunks[1:]
 					comparison = None
-
+			
 			field = document._fields[fieldName]
 			if not forUpdate:
 				searchValue = field.toQuery( value, dereferences=dereferences )
 			else:
 				searchValue = field.fromPython( value )
-
+			
+			targetSearchKey = '.'.join( [field.dbField] + dereferences )
+			
 			if comparison is not None:
 				if comparison in REGEX_COMPARISONS:
 					regex,options = REGEX_COMPARISONS[comparison]
 					pattern = regex % searchValue
-					newSearch[field.dbField] = { '$regex': pattern, '$options': options }
+					newSearch[targetSearchKey] = { '$regex': pattern, '$options': options }
 				else:
-					newSearch[field.dbField] = { '$'+comparison: searchValue }
+					newSearch[targetSearchKey] = { '$'+comparison: searchValue }
 			else:
 				if isinstance(searchValue, dict):
 					if not forUpdate:
 						for name,value in searchValue.iteritems( ):
-							newSearch[field.dbField + '.' + name] = value
+							newSearch[targetSearchKey + '.' + name] = value
 					else:
-						newSearch[field.dbField] = searchValue
+						newSearch[targetSearchKey] = searchValue
 				else:
-					newSearch[field.dbField] = searchValue
+					newSearch[targetSearchKey] = searchValue
 
 		return newSearch
 	
