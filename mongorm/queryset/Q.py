@@ -64,7 +64,11 @@ class Q(object):
 			if comparison is not None:
 				if comparison in REGEX_COMPARISONS:
 					regex,options = REGEX_COMPARISONS[comparison]
-					valueMapper = lambda value: { '$regex': value, '$options': options }
+					regexReserved = [ '\\', '.', '*', '+' ,'^', '$', '[', ']', '?', '(', ')' ]
+					safeValue = value
+					for reserved in regexReserved:
+						safeValue = safeValue.replace( reserved, '\\' + reserved )
+					valueMapper = lambda value: { '$regex': regex % safeValue, '$options': options }
 					#pattern = regex % searchValue
 					#print comparison, searchValue, targetSearchKey, pattern, options
 					#newSearch[targetSearchKey] = { '$regex': pattern, '$options': options }

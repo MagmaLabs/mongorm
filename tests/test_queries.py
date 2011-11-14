@@ -79,3 +79,18 @@ def test_multiple_or( ):
 			{'data.c': {'$options': 'i', '$regex': '123'}}
 		]
 	}
+
+def test_regex_escape( ):
+	"""Tests to make sure regex matches work with values containing regex special characters"""
+	class Test(Document):
+		name = StringField( )
+	
+	# equality
+	assert Q( name__icontains='test.test' ).toMongo( Test ) \
+		== {'name': {'$options': 'i', '$regex': u'test\\.test'}}
+	assert Q( name__iexact='test.test' ).toMongo( Test ) \
+		== {'name': {'$options': 'i', '$regex': u'^test\\.test$'}}
+	assert Q( name__iexact='test\\' ).toMongo( Test ) \
+		== {'name': {'$options': 'i', '$regex': u'^test\\\\$'}}
+	assert Q( name__iexact='test[abc]test' ).toMongo( Test ) \
+		== {'name': {'$options': 'i', '$regex': u'^test\\[abc\\]test$'}}
