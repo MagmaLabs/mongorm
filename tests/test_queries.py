@@ -94,3 +94,17 @@ def test_regex_escape( ):
 		== {'name': {'$options': 'i', '$regex': u'^test\\\\$'}}
 	assert Q( name__iexact='test[abc]test' ).toMongo( Test ) \
 		== {'name': {'$options': 'i', '$regex': u'^test\\[abc\\]test$'}}
+
+def test_and_or( ):
+	"""Tests to make sure 'or's can be embedded in 'and's"""
+	connect( 'test_mongorm' )
+	
+	class Test(Document):
+		name = StringField( )
+	
+	assert Test.objects.filter( 
+			Q( name__icontains='t' ) | Q( name__icontains='e' )
+		).filter( name='123' ).query.toMongo( Test ) \
+		== {'$and': [{'$or': [{'name': {'$options': 'i', '$regex': 't'}},
+				{'name': {'$options': 'i', '$regex': 'e'}}]},
+				{'name': u'123'}]}

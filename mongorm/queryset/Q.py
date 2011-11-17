@@ -92,7 +92,11 @@ class Q(object):
 		return self.do_merge( other, '$or' )
 	
 	def __and__( self, other ):
-		return self.do_merge( other, '$and' )
+		#return self.do_merge( other, '$and' )
+		newQuery = {}
+		newQuery.update( self.query )
+		newQuery.update( other.query )
+		return Q( _query=newQuery )
 	
 	def do_merge( self, other, op ):
 		if len(self.query) == 0: return other
