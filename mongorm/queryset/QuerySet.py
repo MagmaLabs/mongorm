@@ -58,7 +58,17 @@ class QuerySet(object):
 	def delete( self ):
 		self.collection.remove( self.query.toMongo( self.document ) )
 	
-	def update( self, upsert=False, safeUpdate=False, **actions ):
+	def update( self, upsert=False, safeUpdate=False, modifyAndReturn=False, returnAfterUpdate=False, **actions ):
+		"""Performs an update on the collection, using MongoDB atomic modifiers.
+		
+		If upsert is specified, the document will be created if it doesn't exist.
+		If safeUpdate is specified, the success of the update will be checked and
+		the number of modified documents will be returned.
+		
+		If modifyAndReturn is specified, a findAndModify operation will be executed
+		instead of an update operation. The *original* document instance (before any
+		modifications) will be returned, unless returnAfterUpdate is True. If no 
+		document matched the specified query, None will be returned."""
 		updates = {}
 		
 		for action, value in actions.iteritems( ):
@@ -81,9 +91,24 @@ class QuerySet(object):
 		#print 'query:', self.query.toMongo( self.document )
 		#print 'update:', updates
 		
-		ret = self.collection.update( self.query.toMongo( self.document ), updates, upsert=upsert, safe=safeUpdate )
-		if 'n' in ret:
-			return ret['n']
+		if not modifyAndReturn:
+			# standard 'update'
+			ret = self.collection.update( self.query.toMongo( self.document ), updates, upsert=upsert, safe=safeUpdate )
+			if 'n' in ret:
+				return ret['n']
+		else:
+			# findAndModify
+			result = self.collection.find_and_modify(
+				query=self.query.toMongo( self.document ),
+				update=updates,
+				upsert=upsert,
+				new=returnAfterUpdate,
+			)
+			
+			if len(result) == 0:
+				return None
+			else:
+				return self.document( )._fromMongo( result )
 	
 	def order_by( self, *fields ):
 		self.orderBy.extend( fields )
