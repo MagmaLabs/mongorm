@@ -1,4 +1,5 @@
 from mongorm.queryset.Q import Q
+import pymongo
 
 class QuerySet(object):
 	def __init__( self, document, collection, query=None ):
@@ -114,10 +115,24 @@ class QuerySet(object):
 		self.orderBy.extend( fields )
 		return self
 	
+	def _do_find( self, **kwargs ):
+		if 'sort' not in kwargs:
+			sorting = []
+			for sortField in self.orderBy:
+				direction = pymongo.ASCENDING
+				if sortField.startswith( '+' ):
+					sortField = sortField[1:]
+				elif sortField.startswith( '-' ):
+					sortField = sortField[1:]
+					direction = pymongo.DESCENDING
+				sorting.append( (sortField,direction) )
+			kwargs['sort'] = sorting
+		return self.collection.find( self.query.toMongo( self.document ), **kwargs )
+	
 	def __iter__( self ):
 		#print 'iter:', self.query.toMongo( self.document ), self.collection
 		if self._savedItems is None:
-			self._savedItems = self.collection.find( self.query.toMongo( self.document ) )
+			self._savedItems = self._do_find( )
 			self._savedBuiltItems = []
 		for i,item in enumerate(self._savedItems):
 			if i >= len(self._savedBuiltItems):
@@ -139,7 +154,8 @@ class QuerySet(object):
 			assert False, "item not an index"
 		
 		print self.query.toMongo( self.document )
-		items = self.collection.find( self.query.toMongo( self.document ), skip=skip, limit=limit )
+		#items = self.collection.find( self.query.toMongo( self.document ), skip=skip, limit=limit )
+		items = self._do_find( skip=skip, limit=limit )
 		
 		if getOne:
 			try:
