@@ -67,4 +67,4 @@ class SessionStore(SessionBase):
 			if self.session_key is None:
 				return
 			session_key = self.session_key
-		MongoSession.objects(session_key=session_key).delete()
+		MongoSession.objects(sessionKey=session_key).delete()
