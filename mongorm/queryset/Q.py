@@ -20,7 +20,7 @@ class Q(object):
 			
 			fieldName = name
 			
-			MONGO_COMPARISONS = ['gt', 'lt', 'lte', 'gte']
+			MONGO_COMPARISONS = ['gt', 'lt', 'lte', 'gte', 'exists', 'ne']
 			REGEX_COMPARISONS = {
 				'contains': ( '%s', '' ),
 				'icontains': ( '%s', 'i' ),
