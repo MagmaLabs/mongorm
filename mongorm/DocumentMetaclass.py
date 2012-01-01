@@ -81,7 +81,8 @@ class DocumentMetaclass(type):
 		
 		# record the document in the fields
 		for field in newClass._fields.values( ):
-			field.ownerDocument = newClass
+			#field.ownerDocument = newClass
+			field.setOwnerDocument( newClass )
 		
 		# add DoesNotExist and MultipleObjectsReturned exceptions
 		module = attrs.get('__module__')

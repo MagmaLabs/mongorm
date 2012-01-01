@@ -18,3 +18,7 @@ class ListField(BaseField):
 		if bsonValue is None:
 			bsonValue = []
 		return [ self.itemClass.toPython(value) for value in bsonValue ]
+
+	def setOwnerDocument( self, ownerDocument ):
+		super(ListField, self).setOwnerDocument( ownerDocument )
+		self.itemClass.setOwnerDocument( ownerDocument )

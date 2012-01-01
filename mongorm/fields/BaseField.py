@@ -20,3 +20,6 @@ class BaseField(object):
 	
 	def getDefault( self ):
 		return self.default
+	
+	def setOwnerDocument( self, ownerDocument ):
+		self.ownerDocument = ownerDocument
