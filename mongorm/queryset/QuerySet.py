@@ -80,14 +80,17 @@ class QuerySet(object):
 			if '$'+modifier not in updates:
 				updates['$'+modifier] = {}
 			
+			mongoValue = Q( { fieldName: value } ).toMongo( self.document, forUpdate=True )[fieldName]
+			
 			updates['$'+modifier].update( {
-				fieldName.replace( '__', '.' ): value
+				fieldName.replace( '__', '.' ): mongoValue
 			} )
 		
-		if '$set' not in updates:
-			updates['$set'] = {}
-		
-		updates['$set'].update( self.query.toMongo( self.document, forUpdate=True ) )
+		# XXX: why was this here? we shouldn'e be forcing this
+		#if '$set' not in updates:
+		#	updates['$set'] = {}
+		#
+		#updates['$set'].update( self.query.toMongo( self.document, forUpdate=True ) )
 
 		#print 'query:', self.query.toMongo( self.document )
 		#print 'update:', updates
