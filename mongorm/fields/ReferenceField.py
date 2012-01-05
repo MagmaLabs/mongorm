@@ -44,6 +44,8 @@ class ReferenceField(BaseField):
 		return data
 	
 	def toQuery( self, pythonValue, dereferences=[] ):
+		if pythonValue is None:
+			return None
 		return {
 			'_ref': self.fromPython( pythonValue )['_ref']
 		}

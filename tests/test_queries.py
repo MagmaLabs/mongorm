@@ -108,3 +108,26 @@ def test_and_or( ):
 		== {'$or': [{'name': {'$options': 'i', '$regex': 't'}},
 					{'name': {'$options': 'i', '$regex': 'e'}}],
 			'name': u'123'}
+
+def test_referencefield_none( ):
+	"""Make sure ReferenceField can be searched for None"""
+	connect( 'test_mongorm' )
+
+	class TestRef(Document):
+		name = StringField( )
+
+	class TestHolder(Document):
+		ref = ReferenceField( TestRef )
+	
+	TestHolder.objects.delete( )
+	TestHolder( ref=None ).save( )
+	ref = TestRef( name='123' )
+	ref.save( )
+	TestHolder( ref=ref ).save( )
+	
+	assert TestHolder.objects.filter( ref=None ).query.toMongo( TestHolder ) \
+		== {'ref': None}
+	
+	assert TestHolder.objects.filter( ref=None ).count( ) == 1
+	assert TestHolder.objects.filter( ref=ref ).count( ) == 1
+	assert TestHolder.objects.count( ) == 2
