@@ -59,6 +59,29 @@ class QuerySet(object):
 	def delete( self ):
 		self.collection.remove( self.query.toMongo( self.document ) )
 	
+	def _prepareActions( self, **actions ):
+		updates = {}
+		
+		for action, value in actions.iteritems( ):
+			assert '__' in action, 'Action "%s" not legal for update' % (action,)
+			modifier, fieldName = action.split( '__', 1 )
+			assert modifier in ['set', 'inc', 'dec']
+			
+			if '$'+modifier not in updates:
+				updates['$'+modifier] = {}
+			
+			translatedName = fieldName.replace('__', '.')
+			
+			mongoValues = Q( { fieldName: value } ).toMongo( self.document, forUpdate=True )
+			print mongoValues
+			mongoValue = mongoValues[translatedName]
+			
+			updates['$'+modifier].update( {
+				translatedName: mongoValue
+			} )
+		
+		return updates
+	
 	def update( self, upsert=False, safeUpdate=False, modifyAndReturn=False, returnAfterUpdate=False, **actions ):
 		"""Performs an update on the collection, using MongoDB atomic modifiers.
 		
@@ -70,21 +93,8 @@ class QuerySet(object):
 		instead of an update operation. The *original* document instance (before any
 		modifications) will be returned, unless returnAfterUpdate is True. If no 
 		document matched the specified query, None will be returned."""
-		updates = {}
 		
-		for action, value in actions.iteritems( ):
-			assert '__' in action, 'Action "%s" not legal for update' % (action,)
-			modifier, fieldName = action.split( '__', 1 )
-			assert modifier in ['set', 'inc', 'dec']
-			
-			if '$'+modifier not in updates:
-				updates['$'+modifier] = {}
-			
-			mongoValue = Q( { fieldName: value } ).toMongo( self.document, forUpdate=False )[fieldName.replace('__', '.')]
-			
-			updates['$'+modifier].update( {
-				fieldName.replace( '__', '.' ): mongoValue
-			} )
+		updates = self._prepareActions( **actions )
 		
 		# XXX: why was this here? we shouldn'e be forcing this
 		#if '$set' not in updates:

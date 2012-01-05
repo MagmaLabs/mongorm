@@ -53,10 +53,10 @@ class Q(object):
 			field = document._fields[fieldName]
 			if not forUpdate:
 				searchValue = field.toQuery( value, dereferences=dereferences )
+				targetSearchKey = field.dbField
 			else:
 				searchValue = field.fromPython( value )
-			
-			targetSearchKey = field.dbField
+				targetSearchKey = '.'.join( [field.dbField] + dereferences)
 			
 			valueMapper = lambda value: value
 			
@@ -85,7 +85,7 @@ class Q(object):
 					newSearch[targetSearchKey] = valueMapper(searchValue)
 			else:
 				newSearch[targetSearchKey] = valueMapper(searchValue)
-
+		
 		return newSearch
 	
 	def __or__( self, other ):
