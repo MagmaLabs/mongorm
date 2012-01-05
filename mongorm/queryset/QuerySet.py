@@ -80,7 +80,7 @@ class QuerySet(object):
 			if '$'+modifier not in updates:
 				updates['$'+modifier] = {}
 			
-			mongoValue = Q( { fieldName: value } ).toMongo( self.document, forUpdate=True )[fieldName]
+			mongoValue = Q( { fieldName: value } ).toMongo( self.document, forUpdate=False )[fieldName.replace('__', '.')]
 			
 			updates['$'+modifier].update( {
 				fieldName.replace( '__', '.' ): mongoValue

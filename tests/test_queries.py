@@ -105,6 +105,6 @@ def test_and_or( ):
 	assert Test.objects.filter( 
 			Q( name__icontains='t' ) | Q( name__icontains='e' )
 		).filter( name='123' ).query.toMongo( Test ) \
-		== {'$and': [{'$or': [{'name': {'$options': 'i', '$regex': 't'}},
-				{'name': {'$options': 'i', '$regex': 'e'}}]},
-				{'name': u'123'}]}
+		== {'$or': [{'name': {'$options': 'i', '$regex': 't'}},
+					{'name': {'$options': 'i', '$regex': 'e'}}],
+			'name': u'123'}
