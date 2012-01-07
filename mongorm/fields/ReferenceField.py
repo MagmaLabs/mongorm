@@ -1,4 +1,6 @@
 import pymongo.dbref
+import pymongo.objectid
+import bson.errors
 
 from mongorm.fields.BaseField import BaseField
 from mongorm.DocumentRegistry import DocumentRegistry
@@ -30,6 +32,17 @@ class ReferenceField(BaseField):
 		
 		if pythonValue is None:
 			return None
+		
+		if not isinstance(pythonValue, self.documentClass):
+			# try mapping to an objectid
+			try:
+				objectId = pymongo.objectid.ObjectId( str( pythonValue ) )
+			except bson.errors.InvalidId:
+				pass # if it's not a valid ObjectId, then pass through and allow the assert to fail
+			else:
+				return {
+					'_ref': pymongo.dbref.DBRef( self.documentClass._collection, objectId ),
+				}
 		
 		assert isinstance(pythonValue, self.documentClass), \
 				"Referenced value must be a document of type %s" % (self.documentName,)

@@ -11,6 +11,11 @@ class ListField(BaseField):
 	def getDefault( self ):
 		return []
 	
+	def toQuery( self, pythonValue, dereferences=[] ):
+		if not isinstance(pythonValue, (list, set)):
+			return self.itemClass.fromPython( pythonValue )
+		return self.fromPython( pythonValue )
+	
 	def fromPython( self, pythonValue ):
 		return [ self.itemClass.fromPython(value) for value in pythonValue ]
 	
