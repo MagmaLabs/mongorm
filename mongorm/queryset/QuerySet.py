@@ -1,4 +1,5 @@
 from mongorm.queryset.Q import Q
+from mongorm.util import sortListToPyMongo
 import pymongo
 
 class QuerySet(object):
@@ -133,15 +134,7 @@ class QuerySet(object):
 	
 	def _do_find( self, **kwargs ):
 		if 'sort' not in kwargs:
-			sorting = []
-			for sortField in self.orderBy:
-				direction = pymongo.ASCENDING
-				if sortField.startswith( '+' ):
-					sortField = sortField[1:]
-				elif sortField.startswith( '-' ):
-					sortField = sortField[1:]
-					direction = pymongo.DESCENDING
-				sorting.append( (sortField,direction) )
+			sorting = sortListToPyMongo( self.orderBy )
 			
 			if len(sorting) > 0:
 				kwargs['sort'] = sorting

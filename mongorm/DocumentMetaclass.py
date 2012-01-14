@@ -1,10 +1,13 @@
 from mongorm.fields.BaseField import BaseField
 from mongorm.queryset.QuerySetManager import QuerySetManager
 from mongorm.DocumentRegistry import DocumentRegistry
+from mongorm.util import sortListToPyMongo
 
 from mongorm.fields.ObjectIdField import ObjectIdField
 
 from mongorm.errors import DoesNotExist, MultipleObjectsReturned
+
+from mongorm.connection import getDatabase
 
 import sys
 
@@ -67,6 +70,21 @@ class DocumentMetaclass(type):
 			primaryKey = 'id'
 		
 		attrs['_primaryKeyField'] = primaryKey
+		
+		# make sure we have all indexes that are specified
+		if 'meta' in attrs:
+			meta = attrs['meta']
+			if 'indexes' in meta:
+				indexes = meta['indexes']
+				
+				_database = getDatabase( )
+				_collection = _database[collection]
+				
+				for index in indexes:
+					if not isinstance(index, (list,tuple)):
+						index = [index]
+					pyMongoIndexKeys = sortListToPyMongo( index )
+					_collection.ensure_index( pyMongoIndexKeys )
 		
 		# add a query set manager if none exists already
 		if 'objects' not in attrs:
