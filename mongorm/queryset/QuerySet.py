@@ -2,10 +2,12 @@ from mongorm.queryset.Q import Q
 import pymongo
 
 class QuerySet(object):
-	def __init__( self, document, collection, query=None ):
+	def __init__( self, document, collection, query=None, orderBy=None ):
 		self.document = document
 		self.collection = collection
 		self.orderBy = []
+		if orderBy is not None:
+			self.orderBy = orderBy[:]
 		self._savedCount = None
 		self._savedItems = None
 		self._savedBuiltItems = None
@@ -45,7 +47,7 @@ class QuerySet(object):
 			query = Q( **search )
 		newQuery = self.query & query
 		#print 'filter:', newQuery.toMongo( self.document )
-		return QuerySet( self.document, self.collection, query=newQuery )
+		return QuerySet( self.document, self.collection, query=newQuery, orderBy=self.orderBy )
 	
 	def count( self ):
 		if self._savedCount is None:
@@ -73,7 +75,7 @@ class QuerySet(object):
 			translatedName = fieldName.replace('__', '.')
 			
 			mongoValues = Q( { fieldName: value } ).toMongo( self.document, forUpdate=True )
-			print mongoValues
+			#print mongoValues
 			mongoValue = mongoValues[translatedName]
 			
 			updates['$'+modifier].update( {
@@ -125,8 +127,9 @@ class QuerySet(object):
 				return self.document( )._fromMongo( result )
 	
 	def order_by( self, *fields ):
-		self.orderBy.extend( fields )
-		return self
+		newOrderBy = self.orderBy[:]
+		newOrderBy.extend( fields )
+		return  QuerySet( self.document, self.collection, query=self.query, orderBy=newOrderBy )
 	
 	def _do_find( self, **kwargs ):
 		if 'sort' not in kwargs:
@@ -139,7 +142,10 @@ class QuerySet(object):
 					sortField = sortField[1:]
 					direction = pymongo.DESCENDING
 				sorting.append( (sortField,direction) )
-			kwargs['sort'] = sorting
+			
+			if len(sorting) > 0:
+				kwargs['sort'] = sorting
+				
 		return self.collection.find( self.query.toMongo( self.document ), **kwargs )
 	
 	def __iter__( self ):
@@ -166,7 +172,7 @@ class QuerySet(object):
 		else:
 			assert False, "item not an index"
 		
-		print self.query.toMongo( self.document )
+		#print self.query.toMongo( self.document )
 		#items = self.collection.find( self.query.toMongo( self.document ), skip=skip, limit=limit )
 		items = self._do_find( skip=skip, limit=limit )
 		
