@@ -191,3 +191,19 @@ class QuerySet(object):
 	
 	def __call__( self, **search ):
 		return self.filter( **search )
+	
+	def ensure_indexed( self ):
+		"""Ensures that the most optimal index for the query so far is actually in the database.
+		
+		Call this whenever a query is deemed expensive."""
+		
+		indexKeys = []
+		
+		for key in self.query.toMongo( self.document ).keys( ):
+			indexKeys.append( (key, pymongo.ASCENDING) ) # FIXME: work out direction better?
+		indexKeys.extend( sortListToPyMongo( self.orderBy ) )
+		
+		self.collection.ensure_index( indexKeys )
+		
+		return self
+		
