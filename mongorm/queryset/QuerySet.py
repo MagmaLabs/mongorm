@@ -85,7 +85,7 @@ class QuerySet(object):
 		
 		return updates
 	
-	def update( self, upsert=False, safeUpdate=False, modifyAndReturn=False, returnAfterUpdate=False, **actions ):
+	def update( self, upsert=False, safeUpdate=False, modifyAndReturn=False, returnAfterUpdate=False, updateAllDocuments=False, **actions ):
 		"""Performs an update on the collection, using MongoDB atomic modifiers.
 		
 		If upsert is specified, the document will be created if it doesn't exist.
@@ -110,7 +110,7 @@ class QuerySet(object):
 		
 		if not modifyAndReturn:
 			# standard 'update'
-			ret = self.collection.update( self.query.toMongo( self.document ), updates, upsert=upsert, safe=safeUpdate )
+			ret = self.collection.update( self.query.toMongo( self.document ), updates, upsert=upsert, safe=safeUpdate, multi=updateAllDocuments )
 			if 'n' in ret:
 				return ret['n']
 		else:
