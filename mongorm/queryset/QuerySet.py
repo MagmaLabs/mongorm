@@ -3,10 +3,11 @@ from mongorm.util import sortListToPyMongo
 import pymongo
 
 class QuerySet(object):
-	def __init__( self, document, collection, query=None, orderBy=None ):
+	def __init__( self, document, collection, query=None, orderBy=None, onlyFields=None ):
 		self.document = document
 		self.collection = collection
 		self.orderBy = []
+		self.onlyFields = onlyFields
 		if orderBy is not None:
 			self.orderBy = orderBy[:]
 		self._savedCount = None
@@ -48,7 +49,7 @@ class QuerySet(object):
 			query = Q( **search )
 		newQuery = self.query & query
 		#print 'filter:', newQuery.toMongo( self.document )
-		return QuerySet( self.document, self.collection, query=newQuery, orderBy=self.orderBy )
+		return QuerySet( self.document, self.collection, query=newQuery, orderBy=self.orderBy, onlyFields=self.onlyFields )
 	
 	def count( self ):
 		if self._savedCount is None:
@@ -130,7 +131,17 @@ class QuerySet(object):
 	def order_by( self, *fields ):
 		newOrderBy = self.orderBy[:]
 		newOrderBy.extend( fields )
-		return  QuerySet( self.document, self.collection, query=self.query, orderBy=newOrderBy )
+		return QuerySet( self.document, self.collection, query=self.query, orderBy=newOrderBy, onlyFields=self.onlyFields )
+	
+	def only( self, *fields ):
+		onlyFields = set(fields)
+		return QuerySet( self.document, self.collection, query=self.query, orderBy=self.orderBy, onlyFields=onlyFields )
+	
+	def ignore( self, *fields ):
+		current = set(self.document._fields.keys())
+		if self.onlyFields is not None:
+			current = set(self.onlyFields)
+		return self.only( *list(current - set(fields)) )
 	
 	def _do_find( self, **kwargs ):
 		if 'sort' not in kwargs:
@@ -138,7 +149,10 @@ class QuerySet(object):
 			
 			if len(sorting) > 0:
 				kwargs['sort'] = sorting
-				
+		
+		if self.onlyFields is not None:
+			kwargs['fields'] = self.onlyFields
+		
 		return self.collection.find( self.query.toMongo( self.document ), **kwargs )
 	
 	def __iter__( self ):
