@@ -10,6 +10,7 @@ from mongorm.fields.ObjectIdField import ObjectIdField
 from mongorm.fields.StringField import StringField
 from mongorm.fields.BooleanField import BooleanField
 from mongorm.fields.DateTimeField import DateTimeField
+from mongorm.fields.DecimalField import DecimalField
 from mongorm.fields.ListField import ListField
 from mongorm.fields.EmbeddedDocumentField import EmbeddedDocumentField
 from mongorm.fields.ReferenceField import ReferenceField
