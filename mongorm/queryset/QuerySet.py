@@ -21,7 +21,7 @@ class QuerySet(object):
 			self.query = query
 	
 	def _getNewInstance( self, data ):
-		documentName = data.get( '_types', [] )[0]
+		documentName = data.get( '_types', [self.document.__name__] )[0]
 		documentClass = DocumentRegistry.getDocument( documentName )
 		assert issubclass( documentClass, self.document )
 		return documentClass( )._fromMongo( data )

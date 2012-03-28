@@ -1,5 +1,7 @@
 from mongorm import *
 
+from pymongo.objectid import ObjectId
+
 def setup_module(module):
 	DocumentRegistry.clear( )
 
@@ -49,3 +51,9 @@ def test_inheritance_magic( ):
 	assert not isinstance( aOut2, ExtendedThing )
 	assert aOut2.name == 'another'
 	assert aOut2.another == 'another bar'
+	
+	# test backwards compatability
+	assert BaseThing.objects._getNewInstance( {
+		"_id" : ObjectId("4f72c55402ac3601db000000"),
+		"name": "foo",
+	} ) is not None
