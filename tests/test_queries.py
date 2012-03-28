@@ -130,4 +130,5 @@ def test_referencefield_none( ):
 	
 	assert TestHolder.objects.filter( ref=None ).count( ) == 1
 	assert TestHolder.objects.filter( ref=ref ).count( ) == 1
+	assert TestHolder.objects.get( ref=ref ).ref.name == ref.name
 	assert TestHolder.objects.count( ) == 2

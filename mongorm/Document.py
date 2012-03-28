@@ -39,6 +39,8 @@ class Document(BaseDocument):
 			raise OperationError( message % unicode(err) )
 		if newId is not None:
 			setattr(self, self._primaryKeyField, newId)
+		
+		return self
 
 	def __repr__( self ):
 		return '<%s id=%s>' % (self.__class__.__name__, getattr(self, self._primaryKeyField))

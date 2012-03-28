@@ -5,6 +5,8 @@ import bson.errors
 from mongorm.fields.BaseField import BaseField
 from mongorm.DocumentRegistry import DocumentRegistry
 
+from mongorm.blackMagic import serialiseTypesForDocumentType
+
 class ReferenceField(BaseField):
 	def __init__( self, documentClass, *args, **kwargs ):
 		super(ReferenceField, self).__init__( *args, **kwargs )
@@ -49,8 +51,7 @@ class ReferenceField(BaseField):
 		assert pythonValue.id is not None, "Referenced Document must be saved before being assigned"
 		
 		data = {
-			'_types': [ cls.__name__ for cls in pythonValue.__class__.mro() if cls != object \
-							and cls.__name__ not in ['Document', 'BaseDocument', 'EmbeddedDocument'] ],
+			'_types': serialiseTypesForDocumentType(pythonValue.__class__),
 			'_ref': pymongo.dbref.DBRef( pythonValue.__class__._collection, pythonValue.id ),
 		}
 		

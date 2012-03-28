@@ -50,6 +50,9 @@ class Q(object):
 					dereferences = chunks[1:]
 					comparison = None
 			
+			if fieldName not in document._fields:
+				raise AttributeError, "%s does not contain the field '%s'" % (document.__name__, fieldName)
+			
 			field = document._fields[fieldName]
 			if not forUpdate:
 				searchValue = field.toQuery( value, dereferences=dereferences )

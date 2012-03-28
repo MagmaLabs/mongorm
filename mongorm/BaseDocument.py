@@ -1,6 +1,8 @@
 from mongorm import connection
 from mongorm.DocumentMetaclass import DocumentMetaclass
 
+from mongorm.blackMagic import serialiseTypesForDocumentType
+
 class BaseDocument(object):
 	__metaclass__ = DocumentMetaclass
 	__internal__ = True
@@ -12,6 +14,8 @@ class BaseDocument(object):
 		self._is_lazy = False
 		self._data = {}
 		self._values = {}
+		
+		self._data['_types'] = serialiseTypesForDocumentType( self.__class__ )
 		
 		for name,value in kwargs.iteritems( ):
 			setattr(self, name, value)

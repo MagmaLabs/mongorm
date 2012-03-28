@@ -2,6 +2,8 @@ from mongorm.queryset.Q import Q
 from mongorm.util import sortListToPyMongo
 import pymongo
 
+from mongorm.DocumentRegistry import DocumentRegistry
+
 class QuerySet(object):
 	def __init__( self, document, collection, query=None, orderBy=None, onlyFields=None ):
 		self.document = document
@@ -17,6 +19,12 @@ class QuerySet(object):
 			self.query = Q( )
 		else:
 			self.query = query
+	
+	def _getNewInstance( self, data ):
+		documentName = data.get( '_types', [] )[0]
+		documentClass = DocumentRegistry.getDocument( documentName )
+		assert issubclass( documentClass, self.document )
+		return documentClass( )._fromMongo( data )
 	
 	def get( self, query=None, **search ):
 		if query is None:
@@ -39,7 +47,7 @@ class QuerySet(object):
 		except (KeyError, IndexError):
 			pass # we actually EXPECT this should happen, ignore
 		
-		return self.document( )._fromMongo( result )
+		return self._getNewInstance( result )
 	
 	def all( self ):
 		return self
@@ -59,6 +67,9 @@ class QuerySet(object):
 				self._savedCount = self._savedItems.count( )
 		
 		return self._savedCount
+	
+	def __len__( self ):
+		return self.count( )
 	
 	def delete( self ):
 		self.collection.remove( self.query.toMongo( self.document ) )
@@ -126,7 +137,7 @@ class QuerySet(object):
 			if len(result) == 0:
 				return None
 			else:
-				return self.document( )._fromMongo( result )
+				return self._getNewInstance( result )
 	
 	def order_by( self, *fields ):
 		newOrderBy = self.orderBy[:]
@@ -162,7 +173,7 @@ class QuerySet(object):
 			self._savedBuiltItems = []
 		for i,item in enumerate(self._savedItems):
 			if i >= len(self._savedBuiltItems):
-				self._savedBuiltItems.append( self.document( )._fromMongo( item ) )
+				self._savedBuiltItems.append( self._getNewInstance( item ) )
 			
 			yield self._savedBuiltItems[i]
 	
@@ -188,12 +199,12 @@ class QuerySet(object):
 				item = items[0]
 			except IndexError:
 				raise IndexError # re-raise our own index error
-			document = self.document( )._fromMongo( item )
+			document = self._getNewInstance( item )
 			return document
 		else:
 			def _yieldItems():
 				for item in items:
-					document = self.document( )._fromMongo( item )
+					document = self._getNewInstance( item )
 					yield document
 			return _yieldItems( )
 	
