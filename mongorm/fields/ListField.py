@@ -22,6 +22,9 @@ class ListField(BaseField):
 	def toPython( self, bsonValue ):
 		if bsonValue is None:
 			bsonValue = []
+		if not isinstance(bsonValue, list):
+			# if someone upgrades a field from a singular to a list, let them do it if possible
+			return [ self.itemClass.toPython(bsonValue) ]
 		return [ self.itemClass.toPython(value) for value in bsonValue ]
 
 	def setOwnerDocument( self, ownerDocument ):
