@@ -16,6 +16,9 @@ class Document(BaseDocument):
 				return True
 		return False
 	
+	def __ne__(self, other):
+		return not (self == other)
+	
 	def __init__( self, **kwargs ):
 		super(Document, self).__init__( **kwargs )
 	
