@@ -83,7 +83,11 @@ class DocumentMetaclass(type):
 				for index in indexes:
 					if not isinstance(index, (list,tuple)):
 						index = [index]
-					pyMongoIndexKeys = sortListToPyMongo( index )
+					def indexConverter( fieldName ):
+						if fieldName in fields:
+							return fields[fieldName].optimalIndex( )
+						return fieldName
+					pyMongoIndexKeys = sortListToPyMongo( index, indexConverter )
 					_collection.ensure_index( pyMongoIndexKeys )
 		
 		# add a query set manager if none exists already
