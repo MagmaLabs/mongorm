@@ -95,11 +95,15 @@ class Q(object):
 		return self.do_merge( other, '$or' )
 	
 	def __and__( self, other ):
-		#return self.do_merge( other, '$and' )
-		newQuery = {}
-		newQuery.update( self.query )
-		newQuery.update( other.query )
-		return Q( _query=newQuery )
+		if len( set( self.query.keys() ).intersection( other.query.keys() ) ) > 0:
+			# if the 2 queries have overlapping keys, we need to use a $and to join them.
+			return self.do_merge( other, '$and' )
+		else:
+			# otherwise we can just merge the queries together
+			newQuery = {}
+			newQuery.update( self.query )
+			newQuery.update( other.query )
+			return Q( _query=newQuery )
 	
 	def do_merge( self, other, op ):
 		if len(self.query) == 0: return other
