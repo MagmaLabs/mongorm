@@ -93,3 +93,6 @@ class ReferenceField(BaseField):
 			initialData.update( bsonValue.get( '_cache', {} ) )
 		
 		return documentClass( )._fromMongo( initialData )
+	
+	def optimalIndex( self ):
+		return self.dbField + '._ref'

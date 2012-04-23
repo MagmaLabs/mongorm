@@ -99,15 +99,53 @@ def test_and_or( ):
 	"""Tests to make sure 'or's can be embedded in 'and's"""
 	connect( 'test_mongorm' )
 	
-	class Test(Document):
+	class TestAndOr(Document):
 		name = StringField( )
+		path = StringField( )
+		index = ListField( StringField( ) )
 	
-	assert Test.objects.filter( 
+	# using consecutive .filter calls
+	assert TestAndOr.objects.filter( 
 			Q( name__icontains='t' ) | Q( name__icontains='e' )
-		).filter( name='123' ).query.toMongo( Test ) \
+		).filter( name='123' ).query.toMongo( TestAndOr ) \
 		== {'$or': [{'name': {'$options': 'i', '$regex': 't'}},
 					{'name': {'$options': 'i', '$regex': 'e'}}],
 			'name': u'123'}
+	
+	# using Q objects
+	assert TestAndOr.objects.filter( 
+			( Q( name__icontains='t' ) | Q( name__icontains='e' ) ) & Q( name='123' )
+		).query.toMongo( TestAndOr ) \
+		== {'$or': [{'name': {'$options': 'i', '$regex': 't'}},
+					{'name': {'$options': 'i', '$regex': 'e'}}],
+			'name': u'123'}
+	
+	# test ANDs
+	assert TestAndOr.objects.filter(
+		Q(index='123') &
+		Q(index='456')
+	).query.toMongo( TestAndOr ) \
+	== {'$and': [
+		{'index': '123'},
+		{'index': '456'},
+		]}
+	
+	# multiple ORs with embedded ANDs
+	assert TestAndOr.objects.filter(
+		Q(name__icontains='abc') |
+		Q(path__icontains='def') |
+		(
+			Q(index='123') &
+			Q(index='456')
+		)
+	).query.toMongo( TestAndOr ) \
+	== {'$or': [{'name': {'$options': 'i', '$regex': 'abc'}},
+				{'path': {'$options': 'i', '$regex': 'def'}},
+				{'$and': [
+					{'index': '123'},
+					{'index': '456'},
+					]},
+				]}
 
 def test_referencefield_none( ):
 	"""Make sure ReferenceField can be searched for None"""

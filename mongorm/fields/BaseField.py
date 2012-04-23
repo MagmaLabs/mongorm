@@ -23,3 +23,6 @@ class BaseField(object):
 	
 	def setOwnerDocument( self, ownerDocument ):
 		self.ownerDocument = ownerDocument
+	
+	def optimalIndex( self ):
+		return self.dbField
