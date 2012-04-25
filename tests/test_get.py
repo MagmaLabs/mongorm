@@ -14,6 +14,8 @@ def test_equality( ):
 	class TestDocument(Document):
 		s = StringField( )
 	
+	TestDocument.objects.delete()
+	
 	with raises(TestDocument.DoesNotExist):
 		TestDocument.objects.get(s="hello")
 	
