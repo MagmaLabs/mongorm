@@ -32,6 +32,9 @@ class Q(object):
 				
 				'endswith': ( '%s$', '' ),
 				'iendswith': ( '%s$', 'i' ),
+				
+				'matches': ( None, '' ),
+				'imatches': ( None, 'i' ),
 			}
 			ALL_COMPARISONS = MONGO_COMPARISONS + REGEX_COMPARISONS.keys()
 
@@ -67,11 +70,15 @@ class Q(object):
 			if comparison is not None:
 				if comparison in REGEX_COMPARISONS:
 					regex,options = REGEX_COMPARISONS[comparison]
-					regexReserved = [ '\\', '.', '*', '+' ,'^', '$', '[', ']', '?', '(', ')' ]
-					safeValue = value
-					for reserved in regexReserved:
-						safeValue = safeValue.replace( reserved, '\\' + reserved )
-					valueMapper = lambda value: { '$regex': regex % safeValue, '$options': options }
+					if regex is None:
+						finalRegex = value
+					else:
+						safeValue = value
+						regexReserved = [ '\\', '.', '*', '+' ,'^', '$', '[', ']', '?', '(', ')' ]
+						for reserved in regexReserved:
+							safeValue = safeValue.replace( reserved, '\\' + reserved )
+						finalRegex = regex % safeValue
+					valueMapper = lambda value: { '$regex': finalRegex, '$options': options }
 					#pattern = regex % searchValue
 					#print comparison, searchValue, targetSearchKey, pattern, options
 					#newSearch[targetSearchKey] = { '$regex': pattern, '$options': options }
