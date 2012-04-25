@@ -223,7 +223,12 @@ class QuerySet(object):
 		
 		indexKeys.extend( sortListToPyMongo( self.orderBy ) )
 		
-		self.collection.ensure_index( indexKeys )
+		uniqueKeys = []
+		for key in indexKeys:
+			if key not in uniqueKeys:
+				uniqueKeys.append( key )
+		
+		self.collection.ensure_index( uniqueKeys )
 		
 		return self
 	
