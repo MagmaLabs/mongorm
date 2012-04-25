@@ -224,11 +224,21 @@ class QuerySet(object):
 		
 		indexKeys = []
 		
-		for key in self.query.toMongo( self.document ).keys( ):
-			indexKeys.append( (key, pymongo.ASCENDING) ) # FIXME: work out direction better?
+		indexKeys.extend( self._queryToIndex( self.query.toMongo( self.document ) ) )
+		
 		indexKeys.extend( sortListToPyMongo( self.orderBy ) )
 		
 		self.collection.ensure_index( indexKeys )
 		
 		return self
-		
+	
+	def _queryToIndex( self, query ):
+		for key, value in query.iteritems( ):
+			if key in ('$and', '$or'):
+				for subq in value:
+					for index in self._queryToIndex( subq ):
+						yield index
+			elif key.startswith( '$' ):
+				continue # skip, it's a mongo operator and we can't search it?
+			else:
+				yield (key, pymongo.ASCENDING) # FIXME: work out direction better?
