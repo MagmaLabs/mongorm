@@ -34,20 +34,15 @@ class QuerySet(object):
 		#print 'get:', newQuery.toMongo( self.document )
 		
 		# limit of 2 so we know if multiple matched without running a count()
-		result = self.collection.find( newQuery.toMongo( self.document ), limit=2 )
+		result = list( self.collection.find( newQuery.toMongo( self.document ), limit=2 ) )
 		
-		try:
-			result = result[0]
-		except (KeyError, IndexError):
+		if len(result) == 0:
 			raise self.document.DoesNotExist( )
-	
-		try:
-			shouldntExist = result[1]
-			raise self.document.MultipleObjectsReturned( )
-		except (KeyError, IndexError):
-			pass # we actually EXPECT this should happen, ignore
 		
-		return self._getNewInstance( result )
+		if len(result) == 2:
+			raise self.document.MultipleObjectsReturned( )
+		
+		return self._getNewInstance( result[0] )
 	
 	def all( self ):
 		return self
