@@ -11,7 +11,10 @@ class EmbeddedDocumentField(BaseField):
 		assert issubclass(self.documentType, EmbeddedDocument), \
 			"EmbeddedDocumentField can only contain EmbeddedDocument instances"
 	
-	def fromPython( self, pythonValue ):
+	def fromPython( self, pythonValue, dereferences=[] ):
+		if len(dereferences) > 0:
+			return pythonValue # FIXME: this should be validated against the embedded document's fields
+		
 		if pythonValue is None:
 			return None
 		assert isinstance(pythonValue, self.documentType), \

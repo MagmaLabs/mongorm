@@ -9,7 +9,7 @@ class DictField(BaseField):
 	def getDefault( self ):
 		return {}
 
-	def fromPython( self, pythonValue ):
+	def fromPython( self, pythonValue, dereferences=[] ):
 		if pythonValue is None:
 			pythonValue = {}
 		return pythonValue

@@ -61,7 +61,7 @@ class Q(object):
 				searchValue = field.toQuery( value, dereferences=dereferences )
 				targetSearchKey = field.dbField
 			else:
-				searchValue = field.fromPython( value )
+				searchValue = field.fromPython( value, dereferences=dereferences )
 				targetSearchKey = '.'.join( [field.dbField] + dereferences)
 			
 			valueMapper = lambda value: value

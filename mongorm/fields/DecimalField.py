@@ -5,7 +5,7 @@ from decimal import Decimal
 from datetime import datetime
 
 class DecimalField(BaseField):
-	def fromPython( self, pythonValue ):
+	def fromPython( self, pythonValue, dereferences=[] ):
 		if isinstance(pythonValue, (basestring, int, float)):
 			pythonValue = Decimal(pythonValue)
 		if not isinstance(pythonValue, Decimal):

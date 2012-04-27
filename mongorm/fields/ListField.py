@@ -13,11 +13,11 @@ class ListField(BaseField):
 	
 	def toQuery( self, pythonValue, dereferences=[] ):
 		if not isinstance(pythonValue, (list, set)):
-			return self.itemClass.fromPython( pythonValue )
+			return self.itemClass.fromPython( pythonValue, dereferences )
 		return self.fromPython( pythonValue )
 	
-	def fromPython( self, pythonValue ):
-		return [ self.itemClass.fromPython(value) for value in pythonValue ]
+	def fromPython( self, pythonValue, dereferences=[] ):
+		return [ self.itemClass.fromPython(value, dereferences) for value in pythonValue ]
 	
 	def toPython( self, bsonValue ):
 		if bsonValue is None:

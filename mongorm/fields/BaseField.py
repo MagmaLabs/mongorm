@@ -9,7 +9,7 @@ class BaseField(object):
 		if primaryKey:
 			self.dbField = '_id'
 	
-	def fromPython( self, pythonValue ):
+	def fromPython( self, pythonValue, dereferences=[] ):
 		raise NotImplementedError
 
 	def toPython( self, bsonValue ):
