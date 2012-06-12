@@ -75,14 +75,14 @@ class QuerySet(object):
 		for action, value in actions.iteritems( ):
 			assert '__' in action, 'Action "%s" not legal for update' % (action,)
 			modifier, fieldName = action.split( '__', 1 )
-			assert modifier in ['set', 'inc', 'dec']
+			assert modifier in ['set', 'inc', 'dec', 'push', 'pushAll'], 'Unknown modifier "%s"' % modifier
 			
 			if '$'+modifier not in updates:
 				updates['$'+modifier] = {}
 			
 			translatedName = fieldName.replace('__', '.')
 			
-			mongoValues = Q( { fieldName: value } ).toMongo( self.document, forUpdate=True )
+			mongoValues = Q( { fieldName: value } ).toMongo( self.document, forUpdate=True, modifier=modifier )
 			#print mongoValues
 			mongoValue = mongoValues[translatedName]
 			

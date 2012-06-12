@@ -4,7 +4,7 @@ import time
 from datetime import datetime, date
 
 class DateField(BaseField):
-	def fromPython( self, pythonValue, dereferences=[] ):
+	def fromPython( self, pythonValue, dereferences=[], modifier=None ):
 		# convert datetime objects to just a date
 		if isinstance(pythonValue, datetime):
 			pythonValue = pythonValue.date( )

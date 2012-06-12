@@ -10,7 +10,7 @@ class Q(object):
 		else:
 			self.query = _query
 	
-	def toMongo( self, document, forUpdate=False ):
+	def toMongo( self, document, forUpdate=False, modifier=None ):
 		newSearch = {}
 		for (name, value) in self.query.iteritems( ):
 			if name in ['$or', '$and']:
@@ -61,7 +61,7 @@ class Q(object):
 				searchValue = field.toQuery( value, dereferences=dereferences )
 				targetSearchKey = field.dbField
 			else:
-				searchValue = field.fromPython( value, dereferences=dereferences )
+				searchValue = field.fromPython( value, dereferences=dereferences, modifier=modifier )
 				targetSearchKey = '.'.join( [field.dbField] + dereferences)
 			
 			valueMapper = lambda value: value

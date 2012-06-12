@@ -170,3 +170,21 @@ def test_referencefield_none( ):
 	assert TestHolder.objects.filter( ref=ref ).count( ) == 1
 	assert TestHolder.objects.get( ref=ref ).ref.name == ref.name
 	assert TestHolder.objects.count( ) == 2
+
+def test_push( ):
+	connect( 'test_mongorm' )
+
+	class TestPush(Document):
+		names = ListField( StringField( ) )
+	
+	assert TestPush.objects._prepareActions(
+		push__names='123'
+	) == {
+		'$push': {'names': '123'}
+	}
+	
+	assert TestPush.objects._prepareActions(
+		pushAll__names=['123', '456']
+	) == {
+		'$pushAll': {'names': ['123', '456']}
+	}

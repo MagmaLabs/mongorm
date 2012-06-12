@@ -29,7 +29,7 @@ class ReferenceField(BaseField):
 			self.documentClass = documentClass
 			self.documentName = documentClass.__name__
 	
-	def fromPython( self, pythonValue, dereferences=[] ):
+	def fromPython( self, pythonValue, dereferences=[], modifier=None ):
 		self._getClassInfo( )
 		
 		if pythonValue is None:

@@ -16,7 +16,9 @@ class ListField(BaseField):
 			return self.itemClass.fromPython( pythonValue, dereferences )
 		return self.fromPython( pythonValue )
 	
-	def fromPython( self, pythonValue, dereferences=[] ):
+	def fromPython( self, pythonValue, dereferences=[], modifier=None ):
+		if modifier in ('push', 'pop'):
+			return self.itemClass.fromPython(pythonValue, dereferences) # list modifiers act on single instances
 		return [ self.itemClass.fromPython(value, dereferences) for value in pythonValue ]
 	
 	def toPython( self, bsonValue ):

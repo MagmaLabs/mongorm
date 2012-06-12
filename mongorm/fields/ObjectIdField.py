@@ -3,7 +3,7 @@ import pymongo.objectid
 from mongorm.fields.BaseField import BaseField
 
 class ObjectIdField(BaseField):
-	def fromPython( self, pythonValue, dereferences=[] ):
+	def fromPython( self, pythonValue, dereferences=[], modifier=None ):
 		if pythonValue is not None:
 			return pymongo.objectid.ObjectId( unicode(pythonValue) )
 		else:
