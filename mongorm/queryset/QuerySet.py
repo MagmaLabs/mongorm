@@ -118,6 +118,8 @@ class QuerySet(object):
 		if not modifyAndReturn:
 			# standard 'update'
 			ret = self.collection.update( self.query.toMongo( self.document ), updates, upsert=upsert, safe=safeUpdate, multi=updateAllDocuments )
+			if ret is None:
+				return None
 			if 'n' in ret:
 				return ret['n']
 		else:
