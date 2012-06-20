@@ -161,7 +161,9 @@ class QuerySet(object):
 		if self.onlyFields is not None:
 			kwargs['fields'] = self.onlyFields
 		
-		return self.collection.find( self.query.toMongo( self.document ), **kwargs )
+		search = self.query.toMongo( self.document )
+		search['_types'] = self.document.__name__ # filter by the type that was used
+		return self.collection.find( search, **kwargs )
 	
 	def __iter__( self ):
 		#print 'iter:', self.query.toMongo( self.document ), self.collection
