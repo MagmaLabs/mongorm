@@ -4,9 +4,12 @@ import pymongo
 
 from mongorm.DocumentRegistry import DocumentRegistry
 
+from mongorm.blackMagic import serialiseTypesForDocumentType
+
 class QuerySet(object):
 	def __init__( self, document, collection, query=None, orderBy=None, onlyFields=None ):
 		self.document = document
+		self.documentTypes = serialiseTypesForDocumentType( document )
 		self.collection = collection
 		self.orderBy = []
 		self.onlyFields = onlyFields
@@ -57,7 +60,7 @@ class QuerySet(object):
 	def count( self ):
 		if self._savedCount is None:
 			if self._savedItems is None:
-				self._savedCount = self.collection.find( self.query.toMongo( self.document ) ).count( )
+				self._savedCount = self.collection.find( self._get_query( ) ).count( )
 			else:
 				self._savedCount = self._savedItems.count( )
 		
@@ -106,7 +109,7 @@ class QuerySet(object):
 		
 		updates = self._prepareActions( **actions )
 		
-		# XXX: why was this here? we shouldn'e be forcing this
+		# XXX: why was this here? we shouldn't be forcing this
 		#if '$set' not in updates:
 		#	updates['$set'] = {}
 		#
@@ -115,9 +118,22 @@ class QuerySet(object):
 		#print 'query:', self.query.toMongo( self.document )
 		#print 'update:', updates
 		
+		query = self._get_query( forUpsert=True )
+		print query, 'query'
+		print updates, 'update'
+		
+		# {'_types': {$all:['BaseThingUpsert']}, 'name': 'upsert1'}
+		# {'$set': {'value': 42}, '$addToSet': {'_types': {$each: ['BTI', 'BaseThingUpsert']}}}
+		
+		updates['$addToSet'] = {
+			'_types': {
+				'$each': self.documentTypes
+			}
+		}
+		
 		if not modifyAndReturn:
 			# standard 'update'
-			ret = self.collection.update( self.query.toMongo( self.document ), updates, upsert=upsert, safe=safeUpdate, multi=updateAllDocuments )
+			ret = self.collection.update( query, updates, upsert=upsert, safe=safeUpdate, multi=updateAllDocuments )
 			if ret is None:
 				return None
 			if 'n' in ret:
@@ -125,7 +141,7 @@ class QuerySet(object):
 		else:
 			# findAndModify
 			result = self.collection.find_and_modify(
-				query=self.query.toMongo( self.document ),
+				query=query,
 				update=updates,
 				upsert=upsert,
 				new=returnAfterUpdate,
@@ -161,9 +177,18 @@ class QuerySet(object):
 		if self.onlyFields is not None:
 			kwargs['fields'] = self.onlyFields
 		
-		search = self.query.toMongo( self.document )
-		search['_types'] = self.document.__name__ # filter by the type that was used
+		search = self._get_query( )
 		return self.collection.find( search, **kwargs )
+	
+	def _get_query( self, forUpsert=False ):
+		search = self.query.toMongo( self.document )
+		types = self.documentTypes
+		if len(types) > 1: # only filter when looking at a subclass
+			if forUpsert:
+				search['_types'] = {'$all':[self.document.__name__]} # filter by the type that was used
+			else:
+				search['_types'] = self.document.__name__ # filter by the type that was used
+		return search
 	
 	def __iter__( self ):
 		#print 'iter:', self.query.toMongo( self.document ), self.collection
