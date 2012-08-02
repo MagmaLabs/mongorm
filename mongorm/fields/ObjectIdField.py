@@ -1,11 +1,14 @@
-import pymongo.objectid
+try:
+	from pymongo import objectid
+except ImportError:
+	from bson import objectid
 
 from mongorm.fields.BaseField import BaseField
 
 class ObjectIdField(BaseField):
 	def fromPython( self, pythonValue, dereferences=[], modifier=None ):
 		if pythonValue is not None:
-			return pymongo.objectid.ObjectId( unicode(pythonValue) )
+			return objectid.ObjectId( unicode(pythonValue) )
 		else:
 			return None
 	

@@ -1,5 +1,7 @@
-import pymongo.dbref
-import pymongo.objectid
+try:
+	from pymongo import objectid, dbref
+except ImportError:
+	from bson import objectid, dbref
 import bson.errors
 
 from mongorm.fields.BaseField import BaseField
@@ -38,12 +40,12 @@ class ReferenceField(BaseField):
 		if not isinstance(pythonValue, self.documentClass):
 			# try mapping to an objectid
 			try:
-				objectId = pymongo.objectid.ObjectId( str( pythonValue ) )
+				objectId = objectid.ObjectId( str( pythonValue ) )
 			except bson.errors.InvalidId:
 				pass # if it's not a valid ObjectId, then pass through and allow the assert to fail
 			else:
 				return {
-					'_ref': pymongo.dbref.DBRef( self.documentClass._collection, objectId ),
+					'_ref': dbref.DBRef( self.documentClass._collection, objectId ),
 				}
 		
 		assert isinstance(pythonValue, self.documentClass), \
@@ -52,7 +54,7 @@ class ReferenceField(BaseField):
 		
 		data = {
 			'_types': serialiseTypesForDocumentType(pythonValue.__class__),
-			'_ref': pymongo.dbref.DBRef( pythonValue.__class__._collection, pythonValue.id ),
+			'_ref': dbref.DBRef( pythonValue.__class__._collection, pythonValue.id ),
 		}
 		
 		return data
@@ -70,7 +72,7 @@ class ReferenceField(BaseField):
 		if bsonValue is None:
 			return None
 		
-		if isinstance(bsonValue, pymongo.dbref.DBRef):
+		if isinstance(bsonValue, dbref.DBRef):
 			# old style (mongoengine)
 			dbRef = bsonValue
 			documentClass = self.documentClass
