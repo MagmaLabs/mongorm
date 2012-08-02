@@ -119,8 +119,8 @@ class QuerySet(object):
 		#print 'update:', updates
 		
 		query = self._get_query( forUpsert=True )
-		print query, 'query'
-		print updates, 'update'
+		#print query, 'query'
+		#print updates, 'update'
 		
 		# {'_types': {$all:['BaseThingUpsert']}, 'name': 'upsert1'}
 		# {'$set': {'value': 42}, '$addToSet': {'_types': {$each: ['BTI', 'BaseThingUpsert']}}}
