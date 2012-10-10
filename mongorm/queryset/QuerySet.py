@@ -147,7 +147,7 @@ class QuerySet(object):
 				new=returnAfterUpdate,
 			)
 			
-			if len(result) == 0:
+			if result is None or len(result) == 0:
 				return None
 			else:
 				return self._getNewInstance( result )
