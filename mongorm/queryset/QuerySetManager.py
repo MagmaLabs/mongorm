@@ -10,9 +10,9 @@ class QuerySetManager(object):
 			# Document class being accessed, not an object
 			return self
 		
-		if self.collection is None:
-			database = getDatabase( )
-			self.collection = database[owner._collection]
+		# this should be fast, it's just a thin wrapper to get a collection?
+		database = getDatabase( )
+		self.collection = database[owner._collection]
 		
 		return QuerySet( owner, self.collection )
 	
