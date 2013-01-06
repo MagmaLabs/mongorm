@@ -38,29 +38,36 @@ class ConnectionSettings(object):
 
 		return self.database
 
-connectionSettings = []
+connectionSettings = {}
 
-def connect( database, **kwargs ):
-	connectionSettings.append( ConnectionSettings( database, **kwargs ) )
+def _pushConnection( settings, groupName ):
+	connectionSettings.setdefault( groupName, [] ).append( settings )
+
+def _popConnection( groupName ):
+	return connectionSettings[groupName].pop( )
+
+def connect( database, groupName='default', **kwargs ):
+	_pushConnection( ConnectionSettings( database, **kwargs ), groupName )
 
 class pushDatabase(object):
-	def __init__( self, database, **kwargs ):
+	def __init__( self, database, groupName='default', **kwargs ):
+		self.groupName = groupName
 		self.settings = ConnectionSettings( database, **kwargs )
 	
 	def __enter__( self ):
 		#print '>>> entering database', self.settings.connectionSettings
-		connectionSettings.append( self.settings )
+		_pushConnection( self.settings, self.groupName )
 	
 	def __exit__( self, type, value, traceback ):
-		connectionSettings.pop( )
+		_popConnection( self.groupName )
 		#print '<<< existing database'
 
-def getConnection( ):
-	assert len(connectionSettings) > 0, "No database specified: call mongorm.connect() before use"
+def getConnection( groupName='default' ):
+	assert len(connectionSettings.get(groupName,[])) > 0, "No database specified for database group '%s': call mongorm.connect() before use" % groupName
 	
-	return connectionSettings[-1].getConnection( )
+	return connectionSettings[groupName][-1].getConnection( )
 
-def getDatabase( ):
-	assert len(connectionSettings) > 0, "No database specified: call mongorm.connect() before use"
+def getDatabase( groupName='default' ):
+	assert len(connectionSettings.get(groupName,[])) > 0, "No database specified for database group '%s': call mongorm.connect() before use" % groupName
 	
-	return connectionSettings[-1].getDatabase( )
+	return connectionSettings[groupName][-1].getDatabase( )

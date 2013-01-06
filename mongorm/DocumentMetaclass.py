@@ -77,7 +77,8 @@ class DocumentMetaclass(type):
 			if 'indexes' in meta:
 				indexes = meta['indexes']
 				
-				_database = getDatabase( )
+				groupName = attrs.get('database_group', 'default')
+				_database = getDatabase( groupName)
 				_collection = _database[collection]
 				
 				for index in indexes:

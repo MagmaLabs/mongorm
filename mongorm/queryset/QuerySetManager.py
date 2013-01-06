@@ -11,7 +11,8 @@ class QuerySetManager(object):
 			return self
 		
 		# this should be fast, it's just a thin wrapper to get a collection?
-		database = getDatabase( )
+		groupName = getattr(owner, 'database_group', 'default')
+		database = getDatabase( groupName )
 		self.collection = database[owner._collection]
 		
 		return QuerySet( owner, self.collection )

@@ -6,6 +6,7 @@ from mongorm.connection import getDatabase
 from mongorm.errors import OperationError
 
 class Document(BaseDocument):
+	database_group = 'default'
 	__internal__ = True
 	__needs_primary_key__ = True
 	
@@ -23,7 +24,8 @@ class Document(BaseDocument):
 		super(Document, self).__init__( **kwargs )
 	
 	def save( self, forceInsert=False, safe=True ):
-		database = getDatabase( )
+		groupName = getattr(self, 'database_group', 'default')
+		database = getDatabase( groupName )
 		collection = database[self._collection]
 		
 		self._resyncFromPython( )
