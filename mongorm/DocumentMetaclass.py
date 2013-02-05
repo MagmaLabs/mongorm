@@ -1,5 +1,6 @@
 from mongorm.fields.BaseField import BaseField
 from mongorm.queryset.QuerySetManager import QuerySetManager
+from mongorm.aggregation.AggregationManager import AggregationManager
 from mongorm.DocumentRegistry import DocumentRegistry
 from mongorm.util import sortListToPyMongo
 
@@ -94,6 +95,10 @@ class DocumentMetaclass(type):
 		# add a query set manager if none exists already
 		if 'objects' not in attrs:
 			attrs['objects'] = QuerySetManager( )
+		
+		# add an aggregation manager if none exists
+		if 'aggregate' not in attrs:
+			attrs['aggregate'] = AggregationManager( )
 		
 		# construct the new class
 		attrs['_is_lazy'] = False
