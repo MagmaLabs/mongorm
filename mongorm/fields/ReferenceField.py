@@ -11,9 +11,15 @@ from mongorm.blackMagic import serialiseTypesForDocumentType
 
 class ReferenceField(BaseField):
 	def __init__( self, documentClass, *args, **kwargs ):
+		cached_fields = None
+		if 'cached_fields' in kwargs:
+			cached_fields = kwargs['cached_fields']
+			del kwargs['cached_fields']
+		
 		super(ReferenceField, self).__init__( *args, **kwargs )
 		
 		self.inputDocumentClass = documentClass
+		self.cached_fields = cached_fields
 	
 	def _getClassInfo( self ):
 		if hasattr(self, 'documentName'): return
@@ -57,6 +63,11 @@ class ReferenceField(BaseField):
 			'_ref': dbref.DBRef( pythonValue.__class__._collection, pythonValue.id ),
 		}
 		
+		if self.cached_fields is not None:
+			for field in self.cached_fields:
+				if field.startswith('_'): continue
+				data[field] = getattr(pythonValue, field)
+		
 		return data
 	
 	def toQuery( self, pythonValue, dereferences=[] ):
@@ -92,7 +103,10 @@ class ReferenceField(BaseField):
 			initialData = {
 				'_id': dbRef.id,
 			}
-			initialData.update( bsonValue.get( '_cache', {} ) )
+			if self.cached_fields is not None:
+				for field in self.cached_fields:
+					if field in bsonValue:
+						initialData[field] = bsonValue[field]
 		
 		return documentClass( )._fromMongo( initialData )
 	
