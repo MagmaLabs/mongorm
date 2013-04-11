@@ -1,5 +1,4 @@
 from mongorm import *
-from pymongo.dbref import DBRef
 
 from pytest import raises
 

@@ -1,6 +1,6 @@
 from mongorm import *
 
-from pymongo.objectid import ObjectId
+from mongorm.types import ObjectId
 
 def setup_module(module):
 	DocumentRegistry.clear( )
