@@ -2,7 +2,7 @@ try:
 	from pymongo import objectid, dbref
 except ImportError:
 	from bson import objectid, dbref
-import bson.errors
+from mongorm.types import InvalidId
 
 from mongorm.fields.BaseField import BaseField
 from mongorm.DocumentRegistry import DocumentRegistry
@@ -47,7 +47,7 @@ class ReferenceField(BaseField):
 			# try mapping to an objectid
 			try:
 				objectId = objectid.ObjectId( str( pythonValue ) )
-			except bson.errors.InvalidId:
+			except InvalidId:
 				pass # if it's not a valid ObjectId, then pass through and allow the assert to fail
 			else:
 				return {
