@@ -32,6 +32,3 @@ class ListField(BaseField):
 	def setOwnerDocument( self, ownerDocument ):
 		super(ListField, self).setOwnerDocument( ownerDocument )
 		self.itemClass.setOwnerDocument( ownerDocument )
-	
-	def getSearchKey( self, dbField, dereferences ):
-		return self.itemClass.getSearchKey( dbField, dereferences )

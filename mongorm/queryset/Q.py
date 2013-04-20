@@ -72,7 +72,7 @@ class Q(object):
 						searchValue = searchValues
 				else:
 					searchValue = field.toQuery( value, dereferences=dereferences )
-				targetSearchKey = field.getSearchKey( field.dbField, dereferences=dereferences )
+				targetSearchKey = field.dbField
 			else:
 				searchValue = field.fromPython( value, dereferences=dereferences, modifier=modifier )
 				targetSearchKey = '.'.join( [field.dbField] + dereferences)

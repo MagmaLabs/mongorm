@@ -13,7 +13,9 @@ class EmbeddedDocumentField(BaseField):
 	
 	def fromPython( self, pythonValue, dereferences=[], modifier=None ):
 		if len(dereferences) > 0:
-			return pythonValue # FIXME: this should be validated against the embedded document's fields
+			return {
+				'.'.join( dereferences ): pythonValue,
+			} # FIXME: this should be validated against the embedded document's fields
 		
 		if pythonValue is None:
 			return None
@@ -38,6 +40,3 @@ class EmbeddedDocumentField(BaseField):
 		return {
 			'.'.join( dereferences ): pythonValue
 		}
-	
-	def getSearchKey( self, dbField, dereferences ):
-		return '.'.join( [dbField] + dereferences )

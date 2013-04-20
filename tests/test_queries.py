@@ -1,4 +1,5 @@
 from mongorm import *
+from mongorm.types import *
 
 def teardown_module(module):
 	DocumentRegistry.clear( )
@@ -49,7 +50,7 @@ def test_embedded_basic_comparisons( ):
 	# regex comparisons
 	assert Q( data__attributes__course__name__lte='c' ).toMongo( TestPage ) \
 		== {'data.attributes.course.name': {'$lte': 'c'}}
-		
+
 def test_embedded_regex_comparisons( ):
 	"""Tests nested field regex comparisons over an EmbeddedDocument boundary"""
 	class Data(EmbeddedDocument):
@@ -188,3 +189,55 @@ def test_push( ):
 	) == {
 		'$pushAll': {'names': ['123', '456']}
 	}
+
+def test_regex_inside_embedded_docs( ):
+	"""Tests EmbeddedDocuments containing regex"""
+	class Data(EmbeddedDocument):
+		value = StringField( )
+	class EmbeddedRegexTest(Document):
+		data = EmbeddedDocumentField(Data)
+
+	assert Q( data__value__contains='c' ).toMongo( EmbeddedRegexTest ) \
+		== {'data.value': {'$options': '', '$regex': 'c'}}
+
+def test_lists_of_embedded_docs( ):
+	"""Tests ListFields containing EmbeddedDocuments"""
+	class Data(EmbeddedDocument):
+		value = StringField( )
+	class EmbeddedListTest(Document):
+		data = ListField( EmbeddedDocumentField(Data) )
+
+	assert Q( data__value='c' ).toMongo( EmbeddedListTest ) \
+		== {'data.value': 'c'}
+
+def test_lists_of_embedded_docs_regex( ):
+	"""Tests ListFields containing EmbeddedDocuments containing regex"""
+	class Data(EmbeddedDocument):
+		value = StringField( )
+	class EmbeddedListRegexTest(Document):
+		data = ListField( EmbeddedDocumentField(Data) )
+
+	assert Q( data__value__contains='c' ).toMongo( EmbeddedListRegexTest ) \
+		== {'data.value': {'$options': '', '$regex': 'c'}}
+
+def test_reference_in_field( ):
+	"""Tests __in on ReferenceFields"""
+	class Another(Document):
+		value = StringField( )
+	class ReferenceInTest(Document):
+		foo = ReferenceField(Another)
+	
+	a1 = Another( value='another1' ).save( )
+	a2 = Another( value='another1' ).save( )
+	
+	dbRef1 = DBRef( 'another', ObjectId(a1.id) )
+	dbRef2 = DBRef( 'another', ObjectId(a2.id) )
+	
+	assert Q( foo__in=[a1, a2] ).toMongo( ReferenceInTest ) \
+		== {'foo._ref': {'$in': [dbRef1, dbRef2]}}
+	
+	assert Q( foo__in=[a1.id, a2.id] ).toMongo( ReferenceInTest ) \
+		== {'foo._ref': {'$in': [dbRef1, dbRef2]}}
+	
+	assert Q( foo__in=[str(a1.id), str(a2.id)] ).toMongo( ReferenceInTest ) \
+		== {'foo._ref': {'$in': [dbRef1, dbRef2]}}
