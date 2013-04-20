@@ -26,3 +26,6 @@ class BaseField(object):
 	
 	def optimalIndex( self ):
 		return self.dbField
+	
+	def getSearchKey( self, dbField, dereferences ):
+		return dbField

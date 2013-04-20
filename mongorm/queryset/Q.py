@@ -58,14 +58,26 @@ class Q(object):
 			
 			field = document._fields[fieldName]
 			if not forUpdate:
-				searchValue = field.toQuery( value, dereferences=dereferences )
-				targetSearchKey = field.dbField
+				if comparison == 'in':
+					searchValues = [ field.toQuery( v, dereferences=dereferences ) for v in value ]
+					
+					if len(searchValues) > 0 and isinstance(searchValues[0], dict):
+						# our values are dicts, which need to be transposed
+						# [{a:b},{a:c}] -> {a:[b,c]}
+						searchValue = {}
+						for val in searchValues:
+							for key, value in val.iteritems():
+								searchValue.setdefault( key, [] ).append( value )
+					else:
+						searchValue = searchValues
+				else:
+					searchValue = field.toQuery( value, dereferences=dereferences )
+				targetSearchKey = field.getSearchKey( field.dbField, dereferences=dereferences )
 			else:
 				searchValue = field.fromPython( value, dereferences=dereferences, modifier=modifier )
 				targetSearchKey = '.'.join( [field.dbField] + dereferences)
 			
 			valueMapper = lambda value: value
-			
 			
 			if comparison is not None:
 				if comparison in REGEX_COMPARISONS:

@@ -38,3 +38,6 @@ class EmbeddedDocumentField(BaseField):
 		return {
 			'.'.join( dereferences ): pythonValue
 		}
+	
+	def getSearchKey( self, dbField, dereferences ):
+		return '.'.join( [dbField] + dereferences )
