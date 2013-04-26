@@ -1,6 +1,6 @@
 import pymongo
 
-def sortListToPyMongo( sortList, keyMap=None ):
+def sortListToPyMongo( sortList, keyMap=None, convertUnderscoreNotation=True ):
 	sorting = []
 	
 	for sortField in sortList:
@@ -14,6 +14,9 @@ def sortListToPyMongo( sortList, keyMap=None ):
 		
 		if keyMap is not None:
 			sortField = keyMap( sortField )
+		
+		if convertUnderscoreNotation:
+			sortField = sortField.replace( '__', '.' )
 		
 		sorting.append( (sortField,direction) )
 	
