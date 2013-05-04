@@ -43,6 +43,9 @@ class ReferenceField(BaseField):
 		if pythonValue is None:
 			return None
 		
+		if len(dereferences) > 0:
+			return pythonValue # can't do any value checking here.. we actually need to recurse to our referenced class's fromPython
+		
 		if not isinstance(pythonValue, self.documentClass):
 			# try mapping to an objectid
 			try:
@@ -74,8 +77,15 @@ class ReferenceField(BaseField):
 		if pythonValue is None:
 			return None
 		
+		qVal = self.fromPython( pythonValue, dereferences=dereferences )
+		
+		if len(dereferences) > 0:
+			return {
+				'.'.join( dereferences ): qVal,
+			}
+		
 		return {
-			'_ref': self.fromPython( pythonValue )['_ref']
+			'_ref': qVal['_ref']
 		}
 	
 	def toPython( self, bsonValue ):

@@ -241,3 +241,28 @@ def test_reference_in_field( ):
 	
 	assert Q( foo__in=[str(a1.id), str(a2.id)] ).toMongo( ReferenceInTest ) \
 		== {'foo._ref': {'$in': [dbRef1, dbRef2]}}
+
+def test_cached_field_exists( ):
+	"""Tests search and __exists on a cached value"""
+	
+	class Cached(Document):
+		value = StringField( )
+	class Cacher(Document):
+		c = ReferenceField( Cached, cached_fields=['value'] )
+	
+	Cached.objects.delete( )
+	Cacher.objects.delete( )
+	
+	a1 = Cacher( ).save( )
+	a2 = Cacher( ).save( )
+	b = Cacher( c=Cached( value='123' ).save() ).save( )
+	
+	assert Q( c__value='123' ).toMongo( Cacher ) \
+		== {'c.value': '123'}
+	assert Q( c__value__exists=True ).toMongo( Cacher ) \
+		== {'c.value': { '$exists': True }}
+	
+	assert Cacher.objects.filter( c__value='123' ).count() == 1
+	assert Cacher.objects.filter( c__value='789' ).count() == 0
+	assert Cacher.objects.filter( c__value__exists=True ).count() == 1
+	assert Cacher.objects.filter( c__value__exists=False ).count() == 2
