@@ -6,8 +6,14 @@ class EmbeddedDocumentField(BaseField):
 	_resyncAtSave = True
 	
 	def __init__( self, documentType, *args, **kwargs ):
-		super(EmbeddedDocumentField, self).__init__( *args, **kwargs )
 		self.documentType = documentType
+		self.defaultInstanceType = documentType
+		if 'defaultInstanceType' in kwargs:
+			self.defaultInstanceType = kwargs['defaultInstanceType']
+			del kwargs['defaultInstanceType']
+		
+		super(EmbeddedDocumentField, self).__init__( *args, **kwargs )
+		
 		assert issubclass(self.documentType, EmbeddedDocument), \
 			"EmbeddedDocumentField can only contain EmbeddedDocument instances"
 	
@@ -16,6 +22,9 @@ class EmbeddedDocumentField(BaseField):
 			return {
 				'.'.join( dereferences ): pythonValue,
 			} # FIXME: this should be validated against the embedded document's fields
+		
+		if hasattr(self.documentType, 'fromPython'):
+			pythonValue = self.documentType.fromPython( pythonValue )
 		
 		if pythonValue is None:
 			return None
@@ -30,7 +39,7 @@ class EmbeddedDocumentField(BaseField):
 	
 	def toPython( self, bsonValue ):
 		if bsonValue is not None:
-			return self.documentType( )._fromMongo( bsonValue )
+			return self.defaultInstanceType( )._fromMongo( bsonValue )
 		else:
 			return None
 	
