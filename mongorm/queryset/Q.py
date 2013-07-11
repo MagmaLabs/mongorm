@@ -119,13 +119,22 @@ class Q(object):
 							key = targetSearchKey + '.' + name
 						else:
 							key = targetSearchKey
-						newSearch[key] = valueMapper(value)
+						self._mergeSearch( newSearch, key, valueMapper(value) )
 				else:
-					newSearch[targetSearchKey] = valueMapper(searchValue)
+					self._mergeSearch( newSearch, targetSearchKey, valueMapper(searchValue) )
 			else:
-				newSearch[targetSearchKey] = valueMapper(searchValue)
+				self._mergeSearch( newSearch, targetSearchKey, valueMapper(searchValue) )
 		
 		return newSearch
+	
+	def _mergeSearch( self, query, queryKey, newSearch ):
+		if isinstance(newSearch, dict):
+			# this merges dictionary searches, eg
+			#  { '$exists': True } and { '$ne': 'blah' }
+			#  --> { '$exists': True, '$ne': 'blah' }
+			query.setdefault(queryKey, {}).update( newSearch )
+		else:
+			query[queryKey] = newSearch
 	
 	def __or__( self, other ):
 		return self.do_merge( other, '$or' )

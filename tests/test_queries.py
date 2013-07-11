@@ -292,3 +292,19 @@ def test_field_existance( ):
 	
 	assert FieldNotExistDoc.objects.filter( value__exists=True ).count( ) == 10
 	assert FieldNotExistDoc.objects.filter( value__exists=False ).count( ) == 0
+	
+def test_field_existance_plus_op( ):
+	class FieldNotExistDoc(Document):
+		value = StringField( )
+
+	FieldNotExistDoc.objects.delete()
+	assert FieldNotExistDoc.objects.count() == 0
+	
+	assert (Q( value__exists=True ) & Q( value__ne='test' )).toMongo( FieldNotExistDoc ) \
+		== {'value': { '$exists': True, '$ne': 'test' }}
+	
+	assert Q( value__exists=True, value__ne='test' ).toMongo( FieldNotExistDoc ) \
+		== {'value': { '$exists': True, '$ne': 'test' }}
+
+	assert Q( value__exists=False, value__ne='test' ).toMongo( FieldNotExistDoc ) \
+		== {'value': { '$exists': False, '$ne': 'test' }}
