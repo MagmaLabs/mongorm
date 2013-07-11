@@ -80,7 +80,6 @@ class Q(object):
 					if not isinstance(value, expectedType):
 						raise InvalidQueryError, "The '%s__%s' operator requires an argument of type %s, not %s" % \
 							(fieldName, comparison, expectedType.__name__, type(value).__name__)
-					print dereferences
 					searchValue = {
 						'.'.join(dereferences): value
 					}
