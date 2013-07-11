@@ -1,5 +1,7 @@
 from mongorm import *
 from mongorm.types import *
+from mongorm.errors import *
+import pytest
 
 def teardown_module(module):
 	DocumentRegistry.clear( )
@@ -266,3 +268,27 @@ def test_cached_field_exists( ):
 	assert Cacher.objects.filter( c__value='789' ).count() == 0
 	assert Cacher.objects.filter( c__value__exists=True ).count() == 1
 	assert Cacher.objects.filter( c__value__exists=False ).count() == 2
+
+def test_field_existance( ):
+	class FieldNotExistDoc(Document):
+		value = StringField( )
+	
+	FieldNotExistDoc.objects.delete()
+	assert FieldNotExistDoc.objects.count() == 0
+	
+	with pytest.raises( InvalidQueryError ):
+		 Q( value__exists=1 ).toMongo( FieldNotExistDoc )
+	
+	assert Q( value__exists=True ).toMongo( FieldNotExistDoc ) \
+		== {'value': { '$exists': True }}
+	
+	assert Q( value__exists=False ).toMongo( FieldNotExistDoc ) \
+		== {'value': { '$exists': False }}
+	
+	for i in range(10):
+		assert FieldNotExistDoc.objects.filter( value__exists=True ).count( ) == i
+		assert FieldNotExistDoc.objects.filter( value__exists=False ).count( ) == 0
+		FieldNotExistDoc( value=str(i) ).save( )
+	
+	assert FieldNotExistDoc.objects.filter( value__exists=True ).count( ) == 10
+	assert FieldNotExistDoc.objects.filter( value__exists=False ).count( ) == 0

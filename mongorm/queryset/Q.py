@@ -1,3 +1,4 @@
+from ..errors import InvalidQueryError
 
 class Q(object):
 	def __init__( self, _query=None, **search ):
@@ -19,6 +20,10 @@ class Q(object):
 				continue
 			
 			fieldName = name
+			
+			RAW_COMPARISONS = {
+				'exists': bool,
+			}
 			
 			MONGO_COMPARISONS = ['gt', 'lt', 'lte', 'gte', 'exists', 'ne', 'all', 'in', 'elemMatch']
 			REGEX_COMPARISONS = {
@@ -70,6 +75,15 @@ class Q(object):
 								searchValue.setdefault( key, [] ).append( value )
 					else:
 						searchValue = searchValues
+				elif comparison in RAW_COMPARISONS:
+					expectedType = RAW_COMPARISONS[comparison]
+					if not isinstance(value, expectedType):
+						raise InvalidQueryError, "The '%s__%s' operator requires an argument of type %s, not %s" % \
+							(fieldName, comparison, expectedType.__name__, type(value).__name__)
+					print dereferences
+					searchValue = {
+						'.'.join(dereferences): value
+					}
 				else:
 					searchValue = field.toQuery( value, dereferences=dereferences )
 				targetSearchKey = field.dbField
@@ -101,7 +115,10 @@ class Q(object):
 			if isinstance(searchValue, dict):
 				if not forUpdate:
 					for name,value in searchValue.iteritems( ):
-						key = targetSearchKey + '.' + name
+						if name != '':
+							key = targetSearchKey + '.' + name
+						else:
+							key = targetSearchKey
 						newSearch[key] = valueMapper(value)
 				else:
 					newSearch[targetSearchKey] = valueMapper(searchValue)
