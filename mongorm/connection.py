@@ -1,4 +1,8 @@
-from pymongo import Connection
+try:
+	from pymongo import Connection
+except:
+	from pymongo import MongoClient
+	Connection = MongoClient
 
 class ConnectionSettings(object):
 	def __init__( self, database, **kwargs ):
